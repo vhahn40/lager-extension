@@ -119,25 +119,58 @@
     }
     if (msg?.type === "REMOVE_CART_ITEMS") {
       const list = Array.isArray(msg.artikelnummern) ? msg.artikelnummern : [];
-      list.forEach(removeItemBySku);
+      list.forEach(sku => removeItemBySku(sku));
     }
   });
-  function removeItemBySku(sku) {
+
+  async function removeItemBySku(sku) {
     if (!sku) return;
-    document.querySelectorAll(`[data-sku="${sku}"],[data-artikelnummer="${sku}"]`).forEach(el => {
-      const item = el.closest('[id*="cart"],[class*="cart"],[id*="basket"],[class*="basket"],[id*="checkout"],[class*="checkout"]');
-      item?.remove();
-    });
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    const reg = new RegExp(`\\b${sku}\\b`);
-    let node;
-    while (node = walker.nextNode()) {
-      if (reg.test(node.textContent || "")) {
-        const item = node.parentElement?.closest('[id*="cart"],[class*="cart"],[id*="basket"],[class*="basket"],[id*="checkout"],[class*="checkout"]');
-        if (item) item.remove();
-        break;
-      }
+    const container = findCartItemContainerBySku(sku);
+    if (!container) {
+      console.warn("⚠️ Kein Container für SKU", sku);
+      return;
     }
+
+    const delBtn = container.querySelector("button.sagemodul-schnitt__delete-position-button");
+    if (delBtn) {
+      delBtn.click();
+      await wait(500);
+      console.info("🗑️ Artikel entfernt via Delete-Button:", sku);
+      return;
+    }
+
+    const qty = container.querySelector("input[type=number]");
+    const updateBtn = document.querySelector("button, input[type=submit]");
+    if (qty && updateBtn && /aktualisieren/i.test(updateBtn.textContent || updateBtn.value || "")) {
+      qty.value = 0;
+      qty.dispatchEvent(new Event("input", { bubbles: true }));
+      qty.dispatchEvent(new Event("change", { bubbles: true }));
+      updateBtn.click();
+      await wait(500);
+      console.info("♻️ Artikel entfernt via Menge=0:", sku);
+      return;
+    }
+
+    container.remove();
+    console.warn("❌ Nur optisch entfernt (Fallback):", sku);
+  }
+
+  function findCartItemContainerBySku(sku) {
+    const textNodes = document.evaluate(
+      `//*[contains(text(),"${sku}")]`,
+      document,
+      null,
+      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+      null
+    );
+    if (textNodes.snapshotLength > 0) {
+      return textNodes.snapshotItem(0).closest("div, li, tr, section, article");
+    }
+    return null;
+  }
+
+  function wait(ms) {
+    return new Promise(r => setTimeout(r, ms));
   }
 })();
 
