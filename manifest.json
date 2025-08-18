@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Lager Login & Warenkorb-Check",
+  "version": "1.0",
+  "description": "Login für Lager KI + Abgleich von Warenkörben mit Lagerdatenbank",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+    "host_permissions": [
+    "http://localhost:8000/*",
+    "https://lager-9ree.onrender.com/*"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
+

@@ -1,0 +1,195 @@
+/* popup.css – Styling wie in deiner App, nur kompakter fürs Extension-Popup */
+
+/* Base */
+:root{
+  --bg:#fff;
+  --fg:#111;
+  --muted:#666;
+  --primary:#007bff;
+  --primary-hover:#0056b3;
+  --border:#ccc;
+  --shadow:0 4px 16px rgba(0,0,0,.1);
+  --radius:10px;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--fg);
+  font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans","Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";
+  width:360px;              /* typische Popup-Breite */
+  min-height:120px;
+  box-sizing:border-box;
+}
+
+*, *::before, *::after{ box-sizing:inherit; }
+
+main{
+  margin:auto;
+  padding:20px;
+  width:100%;
+  max-width:100%;
+}
+
+/* Headings */
+h1,h2{
+  text-align:center;
+  font-weight:600;
+  margin:0 0 10px;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+select{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:6px;
+  border:1px solid var(--border);
+  font-size:1rem;
+  background:#fff;
+  appearance:none;
+}
+
+/* Button */
+button{
+  width:100%;
+  padding:14px;
+  font-size:1rem;
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  margin-top:10px;
+  transition:background-color .2s ease;
+}
+button:hover{ background:var(--primary-hover); }
+button:disabled{ opacity:.6; cursor:default; }
+
+/* Kleine, kompakte Buttons (z. B. in Ergebnislisten) */
+.btn-ghost{
+  background:none;
+  color:var(--primary);
+  padding:4px 6px;
+  width:auto;
+}
+
+/* Status/Badge */
+.status{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:.95rem;
+  margin:8px 0 2px;
+}
+.status .dot{
+  width:16px; height:16px; border-radius:4px;
+  display:inline-block;
+  border:1px solid var(--border);
+  background:#e8f7ee; /* grünlich */
+}
+.status.error .dot{ background:#fdecec; }
+.status.warn  .dot{ background:#fff7e6; }
+
+/* Karten/Boxen */
+.card{
+  background:#fff;
+  border-radius:var(--radius);
+  padding:16px;
+  margin:10px 0;
+  box-shadow:var(--shadow);
+}
+.card h3{
+  margin:0 0 8px;
+  font-size:1.05rem;
+}
+.subtle{ color:var(--muted); }
+
+/* Ergebnisliste */
+.result-list{ display:flex; flex-direction:column; gap:10px; }
+.result{
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px;
+  background:#fff;
+}
+.result .title{
+  font-weight:600;
+  margin-bottom:6px;
+}
+.result .meta{
+  font-size:.95rem;
+  color:var(--muted);
+  line-height:1.35;
+}
+
+/* Nicht gefunden Liste */
+ul.plain{
+  list-style:disc inside;
+  margin:6px 0 0;
+  padding:0;
+}
+
+/* Sektionstitel */
+.section-title{
+  margin-top:14px;
+  margin-bottom:8px;
+  font-size:1.1rem;
+  text-align:center;
+  font-weight:600;
+}
+
+/* Kompakte Zeilenlayouts */
+.row{
+  display:flex; gap:8px; align-items:center;
+}
+.row > *{ flex:1; }
+
+/* Hamburger/Topbar (falls du sie ins Popup nimmst) */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 12px;
+}
+.hamburger{
+  display:flex; flex-direction:column; gap:4px; width:24px; height:20px; cursor:pointer;
+}
+.hamburger div{ height:3px; background:#333; border-radius:2px; }
+
+/* Utilities */
+.hidden{ display:none !important; }
+
+/* Tabellen (falls benötigt im Popup) */
+table{
+  width:100%; border-collapse:collapse; margin:12px 0;
+  font-size:.95rem;
+}
+th,td{
+  padding:8px 6px; text-align:left; border-bottom:1px solid var(--border);
+}
+table button, table a{
+  font-size:1rem; background:none; border:none; cursor:pointer; padding:4px;
+}
+
+/* Responsive (größere Popups in separatem Tab) */
+@media (min-width: 480px){
+  body{ width:420px; }
+  button{ font-size:1.05rem; padding:16px; }
+}
+
+/* Optional: Dark Mode an OS koppeln */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1115; --fg:#e9eaee; --muted:#a2a7b3;
+    --primary:#3b82f6; --primary-hover:#2563eb; --border:#2a2f3a;
+    --shadow:0 6px 20px rgba(0,0,0,.45);
+  }
+  body, main, .card, .result, input, textarea, select{ background:#151922; color:var(--fg); }
+  input, textarea, select, .result{ border-color:var(--border); }
+  .hamburger div{ background:#e9eaee; }
+}

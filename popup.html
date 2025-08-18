@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>Lager Login</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main>
+    <h2>Login</h2>
+
+    <div class="card">
+      <input id="email" type="email" placeholder="E‑Mail" />
+      <input id="password" type="password" placeholder="Passwort" />
+      <button id="loginBtn">Anmelden</button>
+
+      <!-- Status bleibt #status (wird von JS beschrieben) -->
+      <div id="status" class="status"><span class="dot"></span><span>Nicht angemeldet</span></div>
+    </div>
+
+    <h2 class="section-title">Ergebnisse</h2>
+    <!-- Ergebnisse: dein JS schreibt hier rein -->
+    <div id="results" class="result-list"></div>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+
