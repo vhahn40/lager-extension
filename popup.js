@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const backendInput = document.getElementById("backendUrl");
   const tokenInput = document.getElementById("jwtToken");
   const saveSettingsBtn = document.getElementById("saveSettings");
+  const backendStatusEl = document.getElementById("backendStatus");
   let currentData = null;
 
   // ---- Konfiguration ----
@@ -36,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     JWT_TOKEN = jwtToken || localStorage.getItem("jwtToken") || "";
     if (backendInput) backendInput.value = BACKEND_BASE_URL;
     if (tokenInput) tokenInput.value = JWT_TOKEN;
+    await checkBackend();
   }
 
   async function saveSettings() {
@@ -45,6 +47,32 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("backendUrl", BACKEND_BASE_URL);
     localStorage.setItem("jwtToken", JWT_TOKEN);
     settingsPanel?.classList.add("hidden");
+    await checkBackend();
+  }
+
+  async function checkBackend() {
+    if (!BACKEND_BASE_URL) {
+      if (backendStatusEl) backendStatusEl.textContent = "";
+      return false;
+    }
+    try {
+      const res = await fetch(`${BACKEND_BASE_URL}/reservierungen`, {
+        method: "HEAD",
+        headers: JWT_TOKEN ? { Authorization: `Bearer ${JWT_TOKEN}` } : {}
+      });
+      const ok = res.ok || res.status === 401 || res.status === 403;
+      if (backendStatusEl) {
+        backendStatusEl.innerHTML = `<span class="dot"></span><span>${ok ? "Verbunden" : "Keine Verbindung"}</span>`;
+        backendStatusEl.classList.toggle("error", !ok);
+      }
+      return ok;
+    } catch (e) {
+      if (backendStatusEl) {
+        backendStatusEl.innerHTML = '<span class="dot"></span><span>Keine Verbindung</span>';
+        backendStatusEl.classList.add("error");
+      }
+      return false;
+    }
   }
 
   // Initialisierung: API-Basis setzen, Login-Status prüfen und Warenkorb anfragen
@@ -205,12 +233,20 @@ document.addEventListener("DOMContentLoaded", () => {
         .map((h, idx) => ({ sku: h.artikelnummer, qty: Number(qtyInputs[idx]?.value) || 1, checked: itemChecks[idx]?.checked }))
         .filter(x => x.checked && x.sku);
       if (!selected.length) return;
+      const reserveBtn = document.getElementById("reserveBtn");
+      const name = prompt("Name der Reservierung:");
+      if (!name || !name.trim()) {
+        if (statusEl) {
+          statusEl.textContent = "Name erforderlich";
+          statusEl.classList.add("error");
+        }
+        return;
+      }
       const payload = {
-        name: `Reservierung ${new Date().toISOString().slice(0,16)}`,
+        name: name.trim(),
         items: selected.map(x => ({ artikelnummer: x.sku, menge: x.qty })),
         hinweis: "von Browser-Extension"
       };
-      const reserveBtn = document.getElementById("reserveBtn");
       reserveBtn.disabled = true;
       if (statusEl) {
         statusEl.textContent = "Reserviere...";
