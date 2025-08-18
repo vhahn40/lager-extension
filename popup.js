@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const inStock = hits.filter(h => Number(h.menge) > 0).length;
     const rows = hits.map((h, i) => `
       <label class="result item-row">
-        <input type="checkbox" class="item-check" data-index="${i}" />
+        <input type="checkbox" class="item-check" data-index="${i}" ${Number(h.menge) > 0 ? "checked" : ""} />
         <div class="info">
           <div class="title">${esc(h.quelle || h.hersteller || "")}</div>
           <div class="title">${esc(h.name) ?? "(ohne Name)"}</div>
