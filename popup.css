@@ -96,6 +96,7 @@ button:disabled{ opacity:.6; cursor:default; }
 }
 .status.error .dot{ background:#fdecec; }
 .status.warn  .dot{ background:#fff7e6; }
+.status.error{ color:#fff; }
 
 /* Karten/Boxen */
 .card{
@@ -207,4 +208,24 @@ input, input::placeholder { color:#000 !important; }
   color:var(--muted);
   text-decoration:none;
 }
+
+/* Scrollbare Ergebnisliste */
+.scroll-list{
+  max-height:180px;
+  overflow-y:auto;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:4px;
+  margin-top:6px;
+}
+.list-item{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  font-size:.95rem;
+  padding:4px 0;
+}
+.list-item span{ flex:1; }
+.list-item.header{ font-weight:600; border-bottom:1px solid var(--border); padding-bottom:4px; margin-bottom:4px; }
+.summary{ font-weight:600; margin-top:8px; }
 

@@ -7,21 +7,22 @@
 </head>
 <body>
   <main>
-    <h2>Login</h2>
+    <h2 id="loginTitle">Login</h2>
 
-    <div class="card">
+    <div id="loginCard" class="card">
       <input id="email" type="email" placeholder="E‑Mail" />
       <input id="password" type="password" placeholder="Passwort" />
       <button id="loginBtn">Anmelden</button>
 
       <!-- Status bleibt #status (wird von JS beschrieben) -->
       <div id="status" class="status"><span class="dot"></span><span>Nicht angemeldet</span></div>
-      <a id="logout" href="#" class="logout hidden">Logout</a>
     </div>
 
     <h2 class="section-title">Ergebnisse</h2>
     <!-- Ergebnisse: dein JS schreibt hier rein -->
     <div id="results" class="result-list"></div>
+
+    <a id="logout" href="#" class="logout hidden">Logout</a>
   </main>
 
   <script src="popup.js"></script>
