@@ -11,10 +11,7 @@
   "action": {
     "default_popup": "popup.html"
   },
-    "host_permissions": [
-    "http://localhost:8000/*",
-    "https://lager-9ree.onrender.com/*"
-  ],
+  "host_permissions": ["<all_urls>"],
 
   "content_scripts": [
     {
