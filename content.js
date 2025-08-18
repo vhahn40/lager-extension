@@ -118,8 +118,13 @@
       return true; // async response
     }
     if (msg?.type === "REMOVE_CART_ITEMS") {
-      const list = Array.isArray(msg.artikelnummern) ? msg.artikelnummern : [];
-      list.forEach(sku => removeItemBySku(sku));
+      const list = Array.isArray(msg.items) ? msg.items : [];
+      (async () => {
+        for (const it of list) {
+          await removeItemBySku(it.sku);
+        }
+        if (msg.reload) location.reload();
+      })();
     }
   });
 
@@ -127,18 +132,48 @@
     if (!sku) return;
     const container = findCartItemContainerBySku(sku);
     if (!container) {
-      console.warn("⚠️ Kein Container für SKU", sku);
+      console.warn("[RES] Kein Container für", sku);
       return;
     }
+    if (await tryDeleteButton(container)) {
+      console.info("[RES] Delete-Button genutzt", sku);
+      return;
+    }
+    if (await setQtyZeroAndUpdate(container)) {
+      console.info("[RES] Menge=0 gesetzt", sku);
+      return;
+    }
+    container.style.display = "none";
+    console.warn("[RES] Nur versteckt", sku);
+  }
 
+  function findCartItemContainerBySku(sku) {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        return node.nodeValue && node.nodeValue.includes(sku)
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_SKIP;
+      }
+    });
+    let node;
+    while ((node = walker.nextNode())) {
+      const el = node.parentElement?.closest("div, li, tr, section, article");
+      if (el) return el;
+    }
+    return null;
+  }
+
+  async function tryDeleteButton(container) {
     const delBtn = container.querySelector("button.sagemodul-schnitt__delete-position-button");
     if (delBtn) {
       delBtn.click();
       await wait(500);
-      console.info("🗑️ Artikel entfernt via Delete-Button:", sku);
-      return;
+      return true;
     }
+    return false;
+  }
 
+  async function setQtyZeroAndUpdate(container) {
     const qty = container.querySelector("input[type=number]");
     const updateBtn = document.querySelector("button, input[type=submit]");
     if (qty && updateBtn && /aktualisieren/i.test(updateBtn.textContent || updateBtn.value || "")) {
@@ -147,26 +182,9 @@
       qty.dispatchEvent(new Event("change", { bubbles: true }));
       updateBtn.click();
       await wait(500);
-      console.info("♻️ Artikel entfernt via Menge=0:", sku);
-      return;
+      return true;
     }
-
-    container.remove();
-    console.warn("❌ Nur optisch entfernt (Fallback):", sku);
-  }
-
-  function findCartItemContainerBySku(sku) {
-    const textNodes = document.evaluate(
-      `//*[contains(text(),"${sku}")]`,
-      document,
-      null,
-      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-      null
-    );
-    if (textNodes.snapshotLength > 0) {
-      return textNodes.snapshotItem(0).closest("div, li, tr, section, article");
-    }
-    return null;
+    return false;
   }
 
   function wait(ms) {
