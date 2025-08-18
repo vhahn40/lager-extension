@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const resultsEl = document.getElementById("results");
   const statusEl = document.getElementById("status");
+  const logoutEl = document.getElementById("logout");
 
   // ---- Konfiguration ----
   const DEFAULT_API_BASE = "https://lager-9ree.onrender.com";
@@ -19,20 +20,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (statusEl) statusEl.textContent = `API: ${API_BASE}`;
   }
 
-  // Beim Öffnen: aktiven Tab zur Extraktion auffordern
-  (async function requestCartFromActiveTab() {
+  // Initialisierung: API-Basis setzen, Login-Status prüfen und Warenkorb anfragen
+  (async function init() {
     try {
       await initApiBase();
+      await restoreLogin();
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab?.id) {
-        await chrome.tabs.sendMessage(tab.id, { type: "REQUEST_CART" });
-      }
+      if (tab?.id) await chrome.tabs.sendMessage(tab.id, { type: "REQUEST_CART" });
     } catch (e) {
       console.warn("REQUEST_CART nicht möglich (evtl. kein Content-Script auf dieser Seite):", e);
     }
   })();
 
   document.getElementById("loginBtn").addEventListener("click", onLogin);
+  logoutEl?.addEventListener("click", onLogout);
 
   async function onLogin() {
     const email = document.getElementById("email").value;
@@ -50,9 +51,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
       await storageSet("local", { token: data.access_token });
       statusEl && (statusEl.textContent = "✅ Angemeldet");
+      logoutEl?.classList.remove("hidden");
     } catch (e) {
       console.error(e);
       statusEl && (statusEl.textContent = "❌ Netzwerkfehler");
+    }
+  }
+
+  async function onLogout(e) {
+    e.preventDefault();
+    await chrome.storage.local.remove("token");
+    logoutEl?.classList.add("hidden");
+    statusEl && (statusEl.textContent = "Abgemeldet");
+  }
+
+  async function restoreLogin() {
+    const { token } = await storageGet("local", "token");
+    if (token) {
+      statusEl && (statusEl.textContent = "✅ Angemeldet");
+      logoutEl?.classList.remove("hidden");
     }
   }
 
