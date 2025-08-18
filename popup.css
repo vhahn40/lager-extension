@@ -193,3 +193,18 @@ table button, table a{
   input, textarea, select, .result{ border-color:var(--border); }
   .hamburger div{ background:#e9eaee; }
 }
+
+/* Schriftfarbe beim Login immer schwarz */
+body, .status { color:#000 !important; }
+input, input::placeholder { color:#000 !important; }
+
+/* Logout-Link unten klein */
+.logout {
+  display:block;
+  text-align:right;
+  font-size:0.8rem;
+  margin-top:4px;
+  color:var(--muted);
+  text-decoration:none;
+}
+
