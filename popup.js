@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultsEl = document.getElementById("results");
   const statusEl = document.getElementById("status");
   const logoutEl = document.getElementById("logout");
+  const loginCard = document.getElementById("loginCard");
+  const loginTitle = document.getElementById("loginTitle");
+  let currentData = null;
 
   // ---- Konfiguration ----
   const DEFAULT_API_BASE = "https://lager-9ree.onrender.com";
@@ -45,16 +48,27 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ email: email, passwort: password })
       });
       if (!res.ok) {
-        statusEl && (statusEl.textContent = "❌ Login fehlgeschlagen");
+        if (statusEl) {
+          statusEl.textContent = "Login fehlgeschlagen";
+          statusEl.classList.add("error");
+        }
         return;
       }
       const data = await res.json();
       await storageSet("local", { token: data.access_token });
-      statusEl && (statusEl.textContent = "✅ Angemeldet");
+      if (statusEl) {
+        statusEl.textContent = "";
+        statusEl.classList.remove("error");
+      }
+      loginCard?.classList.add("hidden");
+      loginTitle?.classList.add("hidden");
       logoutEl?.classList.remove("hidden");
     } catch (e) {
       console.error(e);
-      statusEl && (statusEl.textContent = "❌ Netzwerkfehler");
+      if (statusEl) {
+        statusEl.textContent = "Netzwerkfehler";
+        statusEl.classList.add("error");
+      }
     }
   }
 
@@ -62,13 +76,23 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     await chrome.storage.local.remove("token");
     logoutEl?.classList.add("hidden");
-    statusEl && (statusEl.textContent = "Abgemeldet");
+    loginCard?.classList.remove("hidden");
+    loginTitle?.classList.remove("hidden");
+    if (statusEl) {
+      statusEl.textContent = "";
+      statusEl.classList.remove("error");
+    }
   }
 
   async function restoreLogin() {
     const { token } = await storageGet("local", "token");
     if (token) {
-      statusEl && (statusEl.textContent = "✅ Angemeldet");
+      if (statusEl) {
+        statusEl.textContent = "";
+        statusEl.classList.remove("error");
+      }
+      loginCard?.classList.add("hidden");
+      loginTitle?.classList.add("hidden");
       logoutEl?.classList.remove("hidden");
     }
   }
@@ -80,7 +104,10 @@ document.addEventListener("DOMContentLoaded", () => {
         await checkBulk({ artikelnummern: msg.artikelnummern || [], namen: msg.namen || [] });
       } catch (e) {
         console.error("Bulk-Check Fehler:", e);
-        statusEl && (statusEl.textContent = "❌ Bulk-Check fehlgeschlagen");
+        if (statusEl) {
+          statusEl.textContent = "Bulk-Check fehlgeschlagen";
+          statusEl.classList.add("error");
+        }
       }
     }
   });
@@ -88,7 +115,10 @@ document.addEventListener("DOMContentLoaded", () => {
   async function checkBulk({ artikelnummern = [], namen = [] }) {
     const { token } = await storageGet("local", "token");
     if (!token) {
-      statusEl && (statusEl.textContent = "Bitte zuerst einloggen.");
+      if (statusEl) {
+        statusEl.textContent = "Bitte zuerst einloggen.";
+        statusEl.classList.add("error");
+      }
       throw new Error("Kein Token vorhanden");
     }
     const res = await fetch(`${API_BASE}/artikel/bulk-check`, {
@@ -101,6 +131,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
+      if (statusEl) {
+        statusEl.textContent = "Bulk-Check fehlgeschlagen";
+        statusEl.classList.add("error");
+      }
       throw new Error(`Bulk-Check fehlgeschlagen: ${res.status} ${text}`);
     }
     const data = await res.json();
@@ -114,18 +148,44 @@ document.addEventListener("DOMContentLoaded", () => {
       resultsEl.textContent = "Keine Daten.";
       return;
     }
-    const hitsHtml = data.hits.map(h => `
-      <div class="result">
-        <div class="title">${esc(h.name) ?? "(ohne Name)"}</div>
-        <div class="meta">Quelle: ${esc(h.quelle)} · Artikelnummer: ${esc(h.artikelnummer) ?? "—"} · Menge: ${h.menge ?? "—"}</div>
-        <div class="meta">Position: ${h.position ? `x:${h.position.x}, y:${h.position.y}, z:${h.position.z}` : "—"}</div>
-      </div>
+    currentData = data;
+    const hits = data.hits || [];
+    const notFoundCount = data.not_found?.length || 0;
+    const total = hits.length + notFoundCount;
+    const inStock = hits.filter(h => Number(h.menge) > 0).length;
+    const rows = hits.map((h, i) => `
+      <label class="list-item"><input type="checkbox" class="item-check" data-index="${i}" />
+        <span>${esc(h.quelle || h.hersteller || "")}</span>
+        <span>${esc(h.name) ?? "(ohne Name)"}</span>
+        <span>${esc(h.artikelnummer) ?? "—"}</span>
+        <span>${h.menge ?? "—"}</span>
+      </label>
     `).join("");
-    const nfHtml = (data.not_found || []).map(x => `<li>${esc(String(x))}</li>`).join("");
     resultsEl.innerHTML = `
-      <div class="card"><h3>Treffer (${data.hits.length})</h3>${hitsHtml || "<div>Keine Treffer</div>"}</div>
-      <div class="card"><h3>Nicht gefunden (${data.not_found?.length || 0})</h3><ul class="plain">${nfHtml}</ul></div>
+      <div class="summary">${total} Artikel im Warenkorb</div>
+      <div class="summary">davon ${inStock} im Lager</div>
+      <div class="scroll-list">
+        <label class="list-item header"><input type="checkbox" id="checkAll" />
+          <span>Hersteller</span><span>Name</span><span>Artikelnr.</span><span>Menge</span>
+        </label>
+        ${rows || "<div>Keine Treffer</div>"}
+      </div>
+      <button id="reserveBtn">Reservieren</button>
     `;
+    const checkAll = document.getElementById("checkAll");
+    const itemChecks = Array.from(resultsEl.querySelectorAll(".item-check"));
+    checkAll?.addEventListener("change", () => {
+      itemChecks.forEach(c => c.checked = checkAll.checked);
+    });
+    itemChecks.forEach(c => c.addEventListener("change", () => {
+      if (!c.checked) checkAll.checked = false;
+      else if (itemChecks.every(i => i.checked)) checkAll.checked = true;
+    }));
+    document.getElementById("reserveBtn")?.addEventListener("click", () => {
+      const remaining = hits.filter((_, idx) => !itemChecks[idx]?.checked);
+      currentData.hits = remaining;
+      renderResults(currentData);
+    });
   }
 
   function esc(s){ return s==null ? s : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
