@@ -154,37 +154,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const total = hits.length + notFoundCount;
     const inStock = hits.filter(h => Number(h.menge) > 0).length;
     const rows = hits.map((h, i) => `
-      <label class="list-item"><input type="checkbox" class="item-check" data-index="${i}" />
-        <span>${esc(h.quelle || h.hersteller || "")}</span>
-        <span>${esc(h.name) ?? "(ohne Name)"}</span>
-        <span>${esc(h.artikelnummer) ?? "—"}</span>
-        <span>${h.menge ?? "—"}</span>
+      <label class="result item-row">
+        <input type="checkbox" class="item-check" data-index="${i}" />
+        <div class="info">
+          <div class="title">${esc(h.quelle || h.hersteller || "")}</div>
+          <div class="title">${esc(h.name) ?? "(ohne Name)"}</div>
+          <div class="meta">${esc(h.artikelnummer) ?? "—"} · ${h.menge ?? "—"}</div>
+        </div>
       </label>
     `).join("");
     resultsEl.innerHTML = `
-      <div class="summary">${total} Artikel im Warenkorb</div>
-      <div class="summary">davon ${inStock} im Lager</div>
-      <div class="scroll-list">
-        <label class="list-item header"><input type="checkbox" id="checkAll" />
-          <span>Hersteller</span><span>Name</span><span>Artikelnr.</span><span>Menge</span>
-        </label>
-        ${rows || "<div>Keine Treffer</div>"}
-      </div>
+      <div class="summary">${total} Artikel im Warenkorb, davon ${inStock} im Lager</div>
+      <div class="scroll-list">${rows || "<div>Keine Treffer</div>"}</div>
       <button id="reserveBtn">Reservieren</button>
     `;
-    const checkAll = document.getElementById("checkAll");
     const itemChecks = Array.from(resultsEl.querySelectorAll(".item-check"));
-    checkAll?.addEventListener("change", () => {
-      itemChecks.forEach(c => c.checked = checkAll.checked);
-    });
-    itemChecks.forEach(c => c.addEventListener("change", () => {
-      if (!c.checked) checkAll.checked = false;
-      else if (itemChecks.every(i => i.checked)) checkAll.checked = true;
-    }));
-    document.getElementById("reserveBtn")?.addEventListener("click", () => {
+    document.getElementById("reserveBtn")?.addEventListener("click", async () => {
+      const selectedSkus = hits
+        .filter((_, idx) => itemChecks[idx]?.checked)
+        .map(h => h.artikelnummer)
+        .filter(Boolean);
       const remaining = hits.filter((_, idx) => !itemChecks[idx]?.checked);
       currentData.hits = remaining;
       renderResults(currentData);
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab?.id && selectedSkus.length) {
+          chrome.tabs.sendMessage(tab.id, { type: "REMOVE_CART_ITEMS", artikelnummern: selectedSkus });
+        }
+      } catch (e) {
+        console.warn("REMOVE_CART_ITEMS Fehler:", e);
+      }
     });
   }
 

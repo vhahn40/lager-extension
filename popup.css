@@ -119,16 +119,14 @@ button:disabled{ opacity:.6; cursor:default; }
   border-radius:8px;
   padding:12px;
   background:#fff;
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
 }
-.result .title{
-  font-weight:600;
-  margin-bottom:6px;
-}
-.result .meta{
-  font-size:.95rem;
-  color:var(--muted);
-  line-height:1.35;
-}
+.result .info{ flex:1; }
+.result .title{ font-weight:600; }
+.result .title + .title{ margin-top:2px; }
+.result .meta{ font-size:.9rem; color:var(--muted); }
 
 /* Nicht gefunden Liste */
 ul.plain{

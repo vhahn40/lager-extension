@@ -117,6 +117,27 @@
       });
       return true; // async response
     }
+    if (msg?.type === "REMOVE_CART_ITEMS") {
+      const list = Array.isArray(msg.artikelnummern) ? msg.artikelnummern : [];
+      list.forEach(removeItemBySku);
+    }
   });
+  function removeItemBySku(sku) {
+    if (!sku) return;
+    document.querySelectorAll(`[data-sku="${sku}"],[data-artikelnummer="${sku}"]`).forEach(el => {
+      const item = el.closest('[id*="cart"],[class*="cart"],[id*="basket"],[class*="basket"],[id*="checkout"],[class*="checkout"]');
+      item?.remove();
+    });
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const reg = new RegExp(`\\b${sku}\\b`);
+    let node;
+    while (node = walker.nextNode()) {
+      if (reg.test(node.textContent || "")) {
+        const item = node.parentElement?.closest('[id*="cart"],[class*="cart"],[id*="basket"],[class*="basket"],[id*="checkout"],[class*="checkout"]');
+        if (item) item.remove();
+        break;
+      }
+    }
+  }
 })();
 
