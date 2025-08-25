@@ -2,10 +2,11 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Lager Login</title>
+  <title>ShelfMate</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
+  <div class="topbar"><span class="app-name">ShelfMate</span></div>
   <main>
     <h2 id="loginTitle">Login</h2>
 
@@ -18,9 +19,15 @@
       <div id="status" class="status"><span class="dot"></span><span>Nicht angemeldet</span></div>
     </div>
 
-    <h2 class="section-title">Ergebnisse</h2>
+    <h2 id="resultsTitle" class="section-title hidden">Ergebnisse</h2>
     <!-- Ergebnisse: dein JS schreibt hier rein -->
-    <div id="results" class="result-list"></div>
+    <div id="results" class="result-list hidden"></div>
+
+    <div id="reservationBox" class="card hidden">
+      <input id="reservationName" type="text" placeholder="Name der Reservierung" />
+      <div id="reservationError" class="field-error hidden">Bitte einen Namen eingeben.</div>
+      <button id="reserveBtn">Reservieren</button>
+    </div>
 
     <div id="reservationBox" class="card">
       <input id="reservationName" type="text" placeholder="Name der Reservierung" />

@@ -145,10 +145,14 @@ ul.plain{
 }
 
 /* Kompakte Zeilenlayouts */
-.row{
-  display:flex; gap:8px; align-items:center;
+
+/* "Alle auswählen" Zeile */
+.select-all{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
 }
-.row > *{ flex:1; }
 
 /* Hamburger/Topbar (falls du sie ins Popup nimmst) */
 .topbar{

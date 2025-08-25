@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginCard = document.getElementById("loginCard");
   const loginTitle = document.getElementById("loginTitle");
   const reserveBtn = document.getElementById("reserveBtn");
+  const reservationBox = document.getElementById("reservationBox");
+  const resultsTitle = document.getElementById("resultsTitle");
   let currentData = null;
 
   // ---- Konfiguration ----
@@ -65,6 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
       loginCard?.classList.add("hidden");
       loginTitle?.classList.add("hidden");
       logoutEl?.classList.remove("hidden");
+      resultsTitle?.classList.remove("hidden");
+      resultsEl?.classList.remove("hidden");
+      reservationBox?.classList.remove("hidden");
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab?.id) await chrome.tabs.sendMessage(tab.id, { type: "REQUEST_CART" });
+      } catch (e) {
+        console.warn("REQUEST_CART nach Login nicht möglich:", e);
+      }
     } catch (e) {
       console.error(e);
       if (statusEl) {
@@ -80,6 +91,11 @@ document.addEventListener("DOMContentLoaded", () => {
     logoutEl?.classList.add("hidden");
     loginCard?.classList.remove("hidden");
     loginTitle?.classList.remove("hidden");
+    resultsTitle?.classList.add("hidden");
+    resultsEl?.classList.add("hidden");
+    reservationBox?.classList.add("hidden");
+    if (resultsEl) resultsEl.innerHTML = "";
+    currentData = null;
     if (statusEl) {
       statusEl.textContent = "";
       statusEl.classList.remove("error");
@@ -96,6 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
       loginCard?.classList.add("hidden");
       loginTitle?.classList.add("hidden");
       logoutEl?.classList.remove("hidden");
+      resultsTitle?.classList.remove("hidden");
+      resultsEl?.classList.remove("hidden");
+      reservationBox?.classList.remove("hidden");
     }
   }
 
@@ -169,11 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resultsEl.innerHTML = `
       <div class="summary">${total} Artikel im Warenkorb, davon ${inStock} im Lager</div>
       <div class="scroll-list">${rows || "<div>Keine Treffer</div>"}</div>
-      <label class="row">
-        <input type="checkbox" id="selectAll" />
-        <span>Alle auswählen</span>
-      </label>
-      <label class="row"><input type="checkbox" id="reloadAfter" checked /> Nach Entfernen Seite neu laden</label>
+      <label class="select-all"><input type="checkbox" id="selectAll" /> Alle auswählen</label>
     `;
     const selectAll = document.getElementById("selectAll");
     if (selectAll) {
@@ -248,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
           chrome.tabs.sendMessage(tab.id, {
             type: "REMOVE_CART_ITEMS",
             items: reserved.map(r => ({ sku: r.artikelnummer, qty: r.menge })),
-            reload: document.getElementById("reloadAfter")?.checked !== false
+            reload: true
           });
         } catch (e) {
           console.warn("[RES] REMOVE_CART_ITEMS Fehler", e);
