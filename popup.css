@@ -39,6 +39,7 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="search"],
+input[type="number"],
 textarea,
 select{
   width:100%;
@@ -127,6 +128,20 @@ button:disabled{ opacity:.6; cursor:default; }
 .result .meta{ font-size:.9rem; color:var(--muted); }
 
 .item-row input[type=number]{ width:60px; margin-left:auto; }
+
+.disabled{ opacity:.5; pointer-events:none; }
+
+.badge{
+  display:inline-block;
+  padding:2px 4px;
+  border-radius:4px;
+  font-size:.7rem;
+  margin-left:4px;
+  color:#fff;
+}
+.badge.safe{ background:#16a34a; }
+.badge.medium{ background:#ca8a04; }
+.badge.low{ background:#6b7280; }
 
 /* Nicht gefunden Liste */
 ul.plain{
