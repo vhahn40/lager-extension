@@ -2,18 +2,12 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Lager Login</title>
+  <title>ShelfMate</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
+  <div class="topbar"><span class="app-name">ShelfMate</span></div>
   <main>
-    <button id="settingsBtn" class="settings">⚙️</button>
-    <div id="settingsPanel" class="card hidden">
-      <input id="backendUrl" type="text" placeholder="Backend Base URL" />
-      <input id="jwtToken" type="text" placeholder="JWT Token" />
-      <button id="saveSettings" class="btn-ghost">Speichern</button>
-      <div id="backendStatus" class="status"></div>
-    </div>
     <h2 id="loginTitle">Login</h2>
 
     <div id="loginCard" class="card">
@@ -25,9 +19,15 @@
       <div id="status" class="status"><span class="dot"></span><span>Nicht angemeldet</span></div>
     </div>
 
-    <h2 class="section-title">Ergebnisse</h2>
+    <h2 id="resultsTitle" class="section-title hidden">Ergebnisse</h2>
     <!-- Ergebnisse: dein JS schreibt hier rein -->
-    <div id="results" class="result-list"></div>
+    <div id="results" class="result-list hidden"></div>
+
+    <div id="reservationBox" class="card hidden">
+      <input id="reservationName" type="text" placeholder="Name der Reservierung" />
+      <div id="reservationError" class="field-error hidden">Bitte einen Namen eingeben.</div>
+      <button id="reserveBtn">Reservieren</button>
+    </div>
 
     <a id="logout" href="#" class="logout hidden">Logout</a>
   </main>
