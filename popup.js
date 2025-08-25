@@ -174,17 +174,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const notFoundCount = data.not_found?.length || 0;
     const total = hits.length + notFoundCount;
     const inStock = hits.filter(h => Number(h.menge) > 0).length;
-    const rows = hits.map((h, i) => `
-      <label class="result item-row">
-        <input type="checkbox" class="item-check" data-index="${i}" ${Number(h.menge) > 0 ? "checked" : ""} />
+    const rows = hits.map((h, i) => {
+      const score = Number(h.score) || 0;
+      const safe = (h.matched && score >= 0.90);
+      const medium = (!safe && score >= 0.75);
+      const disabled = score < 0.75;
+      const badge = safe
+        ? ' <span class="badge safe">SICHER</span>'
+        : medium
+        ? ' <span class="badge medium">UNSICHER</span>'
+        : ' <span class="badge low">NIEDRIG</span>';
+      return `
+      <label class="result item-row ${disabled ? 'disabled' : ''}">
+        <input type="checkbox" class="item-check" data-index="${i}" ${safe ? 'checked' : ''} ${disabled ? 'disabled' : ''} />
         <div class="info">
           <div class="title">${esc(h.quelle || h.hersteller || "")}</div>
           <div class="title">${esc(h.name) ?? "(ohne Name)"}</div>
-          <div class="meta">${esc(h.artikelnummer) ?? "—"} · ${h.menge ?? "—"}</div>
+          <div class="meta">${esc(h.artikelnummer) || "—"} · ${h.menge ?? "—"} · ≈${Math.round(score*100)}% · ${esc(h.reason || "")}${badge}</div>
         </div>
-        <input type="number" class="item-qty" min="1" max="${h.menge || 1}" value="1" />
-      </label>
-    `).join("");
+        <input type="number" class="item-qty" min="1" max="${h.menge || 1}" value="1" ${disabled ? 'disabled' : ''} />
+      </label>`;
+    }).join("");
     resultsEl.innerHTML = `
       <div class="summary">${total} Artikel im Warenkorb, davon ${inStock} im Lager</div>
       <div class="scroll-list">${rows || "<div>Keine Treffer</div>"}</div>
@@ -194,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectAll) {
       selectAll.addEventListener("change", () => {
         const itemChecks = Array.from(resultsEl.querySelectorAll(".item-check"));
-        itemChecks.forEach(chk => { chk.checked = selectAll.checked; });
+        itemChecks.filter(chk => !chk.disabled).forEach(chk => { chk.checked = selectAll.checked; });
       });
     }
   }
