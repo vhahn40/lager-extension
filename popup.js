@@ -134,6 +134,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   async function checkBulk({ artikelnummern = [], namen = [] }) {
+    if ((!artikelnummern || !artikelnummern.length) && (!namen || !namen.length)) {
+      if (statusEl){ statusEl.textContent = "Kein Warenkorb erkannt."; statusEl.classList.remove("error"); }
+      if (resultsEl) resultsEl.innerHTML = "";
+      return;
+    }
     const { token } = await storageGet("local", "token");
     if (!token) {
       if (statusEl) {
@@ -175,8 +180,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const total = hits.length + notFoundCount;
     const inStock = hits.filter(h => Number(h.menge) > 0).length;
     const rows = hits.map((h, i) => {
-      const score = Number(h.score) || 0;
-      const safe = (h.matched && score >= 0.90);
+      const score = Number(h.score || 0);
+      const reason = h.reason || "";
+      const matched = !!h.matched;
+      const safe = (matched && score >= 0.90);
       const medium = (!safe && score >= 0.75);
       const disabled = score < 0.75;
       const badge = safe
@@ -190,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="info">
           <div class="title">${esc(h.quelle || h.hersteller || "")}</div>
           <div class="title">${esc(h.name) ?? "(ohne Name)"}</div>
-          <div class="meta">${esc(h.artikelnummer) || "—"} · ${h.menge ?? "—"} · ≈${Math.round(score*100)}% · ${esc(h.reason || "")}${badge}</div>
+          <div class="meta">${esc(h.artikelnummer) || "—"} · ${h.menge ?? "—"} · ≈${Math.round(score*100)}%${reason ? ' · ' + esc(reason) : ''}${badge}</div>
         </div>
         <input type="number" class="item-qty" min="1" max="${h.menge || 1}" value="1" ${disabled ? 'disabled' : ''} />
       </label>`;
@@ -230,8 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const payload = {
       name,
-      items: selected.map(x => ({ artikelnummer: x.sku, menge: x.qty })),
-      hinweis: "von Browser-Extension",
+      items: selected.map(x => ({ artikelnummer: x.sku, menge: x.qty }))
     };
 
     if (reserveBtn) reserveBtn.disabled = true;
