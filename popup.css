@@ -2,14 +2,9 @@
 
 /* Base */
 :root{
-  --bg:#fff;
-  --fg:#111;
-  --muted:#666;
-  --primary:#007bff;
-  --primary-hover:#0056b3;
-  --border:#ccc;
-  --shadow:0 4px 16px rgba(0,0,0,.1);
-  --radius:10px;
+  --bg:#0f1115; --fg:#e9eaee; --muted:#a2a7b3;
+  --primary:#3b82f6; --primary-hover:#2563eb; --border:#2a2f3a;
+  --shadow:0 6px 20px rgba(0,0,0,.45); --radius:10px;
 }
 
 html,body{
@@ -52,9 +47,12 @@ select{
   border-radius:6px;
   border:1px solid var(--border);
   font-size:1rem;
-  background:#fff;
+  background:#151922;
+  color:#fff;
   appearance:none;
 }
+
+input::placeholder{ color:#c9ceda; }
 
 /* Button */
 button{
@@ -100,7 +98,7 @@ button:disabled{ opacity:.6; cursor:default; }
 
 /* Karten/Boxen */
 .card{
-  background:#fff;
+  background:#151922;
   border-radius:var(--radius);
   padding:16px;
   margin:10px 0;
@@ -118,7 +116,7 @@ button:disabled{ opacity:.6; cursor:default; }
   border:1px solid var(--border);
   border-radius:8px;
   padding:12px;
-  background:#fff;
+  background:#151922;
   display:flex;
   gap:8px;
   align-items:flex-start;
@@ -163,10 +161,8 @@ ul.plain{
 .hamburger div{ height:3px; background:#333; border-radius:2px; }
 
 /* Utilities */
+.field-error{ color:#ffb4b4; font-size:.9rem; margin-top:4px; }
 .hidden{ display:none !important; }
-
-.settings{ position:absolute; top:8px; right:8px; background:none; border:none; cursor:pointer; width:auto; padding:4px; }
-#settingsPanel{ display:flex; flex-direction:column; gap:4px; }
 
 /* Tabellen (falls benötigt im Popup) */
 table{
@@ -185,22 +181,6 @@ table button, table a{
   body{ width:420px; }
   button{ font-size:1.05rem; padding:16px; }
 }
-
-/* Optional: Dark Mode an OS koppeln */
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#0f1115; --fg:#e9eaee; --muted:#a2a7b3;
-    --primary:#3b82f6; --primary-hover:#2563eb; --border:#2a2f3a;
-    --shadow:0 6px 20px rgba(0,0,0,.45);
-  }
-  body, main, .card, .result, input, textarea, select{ background:#151922; color:var(--fg); }
-  input, textarea, select, .result{ border-color:var(--border); }
-  .hamburger div{ background:#e9eaee; }
-}
-
-/* Schriftfarbe beim Login immer schwarz */
-body, .status { color:#000 !important; }
-input, input::placeholder { color:#000 !important; }
 
 /* Logout-Link unten klein */
 .logout {
